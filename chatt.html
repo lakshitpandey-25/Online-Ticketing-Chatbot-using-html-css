@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Ticket Booking Chatbot</title>
+  <link rel="stylesheet" href="no.css">
+  
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">Ticket Booking Chatbot</div>
+    <div id="chat-box" class="chat-box"></div>
+    <div class="input-box">
+      <input id="user-input" type="text" placeholder="Type your message...">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById("chat-box");
+    const userInput = document.getElementById("user-input");
+
+    let step = 0;
+    let bookingData = {};
+
+    function appendMessage(sender, text) {
+      const msg = document.createElement("div");
+      msg.classList.add("message", sender);
+      msg.textContent = text;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function botReply(text) {
+      appendMessage("bot", text);
+    }
+    function sendMessage() {
+      const text = userInput.value.trim();
+      if (!text) return;
+
+      appendMessage("user", text);
+      userInput.value = "";
+
+      handleConversation(text);
+    }
+
+    function handleConversation(text) {
+      if (step === 0) {
+        botReply("Hi! Do you want to book a Bus, Train or Flight?");
+        step = 1;
+      } else if (step === 1) {
+        bookingData.mode = text.toLowerCase();
+        if (!["bus","train","flight"].includes(bookingData.mode)) {
+          botReply("Sorry, I can only book Bus, Train, or Flight. 😔");
+          return;
+        }
+        botReply("Enter from where to travel?");
+        step = 2;
+      } else if (step === 2) {
+        bookingData.source = text;
+        botReply("Enter your destination city:");
+        step = 3;
+      } else if (step === 3) {
+        bookingData.destination = text;
+        botReply("Enter your travel date (DD-MM-YYYY):");
+        step = 4;
+      } else if (step === 4) {
+        bookingData.date = text;
+        botReply("How many passengers?");
+        step = 5;
+      } else if (step === 5) {
+        bookingData.passengers = text;
+        botReply(` Searching ${bookingData.mode} tickets from ${bookingData.source} ➝ ${bookingData.destination} on ${bookingData.date} for ${bookingData.passengers} passenger(s)...`);
+        botReply("1. Economy - Rs. 500\n2. Standard - Rs. 800\n3. Premium - Rs. 1200");
+        botReply("Please type 1, 2, or 3 to choose an option.");
+        step = 6;
+      } else if (step === 6) {
+        if (["1","2","3"].includes(text)) {
+          bookingData.choice = text;
+          const cls = text === "1" ? "Economy" : text === "2" ? "Standard" : "Premium";
+          botReply(" Your ticket has been booked successfully!");
+          botReply(` Mode: ${bookingData.mode}\n Route: ${bookingData.source} ➝ ${bookingData.destination}\n Date: ${bookingData.date}\n👥 Passengers: ${bookingData.passengers}\n💺 Class: ${cls}`);
+          step = 0;
+        } else {
+          botReply("Invalid option. Please type 1, 2, or 3.");
+        }
+      }
+    }
+    botReply("Welcome to Smart Ticket Booking Chatbot!");
+    handleConversation("");
+  </script>
+</body>
+</html>
